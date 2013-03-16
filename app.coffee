@@ -24,6 +24,11 @@ app.configure "development", ->
   app.use express.errorHandler()
 
 app.get "/", routes.index
-
-http.createServer(app).listen app.get("port"), ->
+server = http.createServer(app).listen app.get("port"), ->
   console.log "Express server listening on port " + app.get("port")
+
+io = require('socket.io').listen(server)
+
+io.sockets.on 'connection', (socket) ->
+  socket.emit 'news',
+    temperature: "HI!°"

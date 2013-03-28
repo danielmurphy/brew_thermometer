@@ -3,16 +3,15 @@
 Module dependencies.
 ###
 
+require("coffee-script")
 express = require("express")
 routes = require("./routes")
 http = require("http")
 path = require("path")
 app = express()
 sys = require('sys')
-exec = require('child_process').exec
-
-exec("modprobe w1-gpio")
-exec("modprobe w1-therm")
+ 
+#exec = require('child_process').exec
 
 app.configure ->
   app.set "port", process.env.PORT or 3000
@@ -34,15 +33,9 @@ server = http.createServer(app).listen app.get("port"), ->
 
 io = require('socket.io').listen(server)
 
-
-# io.sockets.on 'connection', (socket) ->
-
-readTemp = ->
-  exec "cat /sys/bus/w1/devices/28-000003e6d556/w1_slave", (error, stdout, stderr) =>
-    unless error
-      temperature = parseInt(stdout.match(/\d{5}/g)[0]) / 1000
-      temperature = (temperature * 9/5 + 32).toFixed(1) + "°"
-      io.sockets.emit 'news',
-        temperature: temperature
-
-setInterval readTemp, 1000
+Thermometer = require('./thermometer')
+thermometer = new Thermometer()
+thermometer.on 'temperatureChanged', (temp) ->
+  io.sockets.emit 'news',
+    temperature: temp
+ 

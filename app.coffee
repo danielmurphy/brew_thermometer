@@ -34,14 +34,14 @@ server = http.createServer(app).listen app.get("port"), ->
 
 io = require('socket.io').listen(server)
 
-io.sockets.on 'connection', (socket) ->
-  socket.emit 'news',
-    temperature: "HI!°"
+
+# io.sockets.on 'connection', (socket) ->
 
 readTemp = ->
   exec "cat /sys/bus/w1/devices/28-000003e6d556/w1_slave", (error, stdout, stderr) =>
     unless error
-      temperature = stdout.match(/\d{5}/g)[0]
+      temperature = parseInt(stdout.match(/\d{5}/g)[0]) / 1000
+      temperature = (temperature * 9/5 + 32).toFixed(1) + "°"
       io.sockets.emit 'news',
         temperature: temperature
 

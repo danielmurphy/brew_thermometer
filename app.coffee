@@ -10,7 +10,9 @@ http = require("http")
 path = require("path")
 app = express()
 sys = require('sys')
- 
+util = require('util')
+twitter = require('twitter')
+
 #exec = require('child_process').exec
 
 app.configure ->
@@ -36,6 +38,24 @@ io = require('socket.io').listen(server)
 Thermometer = require('./thermometer')
 thermometer = new Thermometer()
 thermometer.on 'temperatureChanged', (temp) ->
+  exports.currentTemp = temp
   io.sockets.emit 'news',
     temperature: temp
  
+tweeter = new twitter
+  consumer_key: '9DcuISdlZpaxYnHZF7T5w'
+  consumer_secret: 'agGytO7En53IeYjktz7OiNlRk3iSar4L3sz2w5Fwwg8'
+  access_token_key: '1256072593-ElKpLbfqsN1ICiLRXSoFoQe48z7PxVltozlmzME'
+  access_token_secret: 'B34VUo66q6HszNGuKRxnR77EHg0bYLWKmTPyc6mFgY'
+
+updateStatus = (tweeter, temp) ->
+  console.log 'Updating twitter'
+  tweeter.updateStatus "The current temperature is: #{temp}", (data) ->
+  
+setTimeout ->
+ updateStatus(tweeter, exports.currentTemp)
+, 5000
+
+setInterval ->
+  updateStatus(tweeter, exports.currentTemp) if exports.currentTemp?
+, 1000 * 60 * 30

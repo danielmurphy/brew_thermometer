@@ -4,8 +4,8 @@ EventEmitter = require('events').EventEmitter
 class Thermometer extends EventEmitter
   constructor: ->
     @temperature = 0
-    exec("modprobe w1-gpio")
-    exec("modprobe w1-therm")
+    exec("sudo modprobe w1-gpio")
+    exec("sudo modprobe w1-therm")
 
     setInterval =>
       old_temp = @temperature

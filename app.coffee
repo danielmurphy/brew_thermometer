@@ -35,8 +35,8 @@ server = http.createServer(app).listen app.get("port"), ->
 
 io = require('socket.io').listen(server)
 
-Thermometer = require('./thermometer')
-thermometer = new Thermometer()
+therm = require('./thermometer')
+thermometer = new therm()
 thermometer.on 'temperatureChanged', (temp) ->
   exports.currentTemp = temp
   io.sockets.emit 'news',
@@ -49,13 +49,17 @@ tweeter = new twitter
   access_token_secret: 'B34VUo66q6HszNGuKRxnR77EHg0bYLWKmTPyc6mFgY'
 
 updateStatus = (tweeter, temp) ->
-  console.log 'Updating twitter'
-  tweeter.updateStatus "The current temperature is: #{temp}", (data) ->
+  console.log "Updating twitter with #{temp}"
+  if temp?
+    date = new Date()
+    tweeter.updateStatus "The temperature at #{date.getHours()}:#{date.getMinutes()}:#{date.getSeconds()} is: #{temp}", (data) ->
+      console.log 'twitter returned'
+      console.log data.errors if data.errors?
   
 setTimeout ->
  updateStatus(tweeter, exports.currentTemp)
 , 5000
 
 setInterval ->
-  updateStatus(tweeter, exports.currentTemp) if exports.currentTemp?
+  updateStatus(tweeter, exports.currentTemp)
 , 1000 * 60 * 30
